@@ -16,7 +16,7 @@ func main() {
 	configWizard := config.NewConfigWizard(os.Getenv("CONFIG_FILE"))
 	config, err := configWizard.GetConfiguration()
 	if err != nil {
-		log.Fatalf("could not load configuration: %w", err)
+		log.Fatalf("could not load configuration: %v", err)
 	}
 
 	log.Println(config)

@@ -1,9 +1,9 @@
-package main
+package driver
 
 import (
-	"fmt"
+	"github.com/peeley/carpal/internal/resource"
 )
 
-func main() {
-
+type Driver interface {
+	GetResource(string) (*resource.Resource, error)
 }

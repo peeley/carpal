@@ -34,6 +34,7 @@ type DatabaseConfiguration struct {
 }
 
 type Configuration struct {
+	Domain                string                 `yaml:"domain"`
 	Driver                string                 `yaml:"driver"`
 	FileConfiguration     *FileConfiguration     `yaml:"file"`
 	LDAPConfiguration     *LDAPConfiguration     `yaml:"ldap"`
@@ -43,7 +44,7 @@ type Configuration struct {
 func (wiz configWizard) readConfigFile() ([]byte, error) {
 	contents, err := os.ReadFile(wiz.ConfigFileLocation)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
 
 	return contents, nil
