@@ -8,18 +8,18 @@ import (
 type Properties map[string]any
 
 type Link struct {
-	Rel string
-	Type *string
-	Href *string
-	Titles []string
-	Properties Properties
+	Rel        string     `json:"rel"`
+	Type       *string    `json:"type,omitempty"`
+	Href       *string    `json:"href,omitempty"`
+	Titles     []string   `json:"titles,omitempty"`
+	Properties Properties `json:"properties,omitempty"`
 }
 
 type Resource struct {
-	Subject string
-	Aliases []string
-	Properties Properties
-	Links []Link
+	Subject    string     `json:"subject"`
+	Aliases    []string   `json:"aliases,omitempty"`
+	Properties Properties `json:"properties,omitempty"`
+	Links      []Link     `json:"links,omitempty"`
 }
 
 func MarshalResource(resource Resource) ([]byte, error) {

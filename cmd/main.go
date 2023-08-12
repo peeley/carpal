@@ -6,11 +6,10 @@ import (
 	"os"
 
 	"github.com/peeley/carpal/internal/config"
+	"github.com/peeley/carpal/internal/driver"
+	"github.com/peeley/carpal/internal/driver/file"
+	"github.com/peeley/carpal/internal/handler"
 )
-
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello world!"))
-}
 
 func main() {
 	configWizard := config.NewConfigWizard(os.Getenv("CONFIG_FILE"))
@@ -19,8 +18,16 @@ func main() {
 		log.Fatalf("could not load configuration: %v", err)
 	}
 
-	log.Println(config)
+	var driver driver.Driver
+	switch config.Driver {
+	case "file":
+		driver = file.NewFileDriver(*config)
+	default:
+		log.Fatalf("driver `%s` is invalid", config.Driver)
+	}
 
-	http.HandleFunc("/", testHandler)
+	handler := handler.NewResourceHandler(driver)
+	http.HandleFunc("/", handler.Handle)
+
 	log.Fatal(http.ListenAndServe(":8008", nil))
 }
