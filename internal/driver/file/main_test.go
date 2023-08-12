@@ -10,7 +10,6 @@ import (
 
 func TestFileDriverGetResource(t *testing.T) {
 	config := config.Configuration{
-		Domain: "foobar.com",
 		Driver: "file",
 		FileConfiguration: &config.FileConfiguration{
 			Directory: "../../../test/",
@@ -21,7 +20,7 @@ func TestFileDriverGetResource(t *testing.T) {
 
 	t.Run("can get resource from file", func(t *testing.T){
 
-		got, err := fileDriver.GetResource("bob")
+		got, err := fileDriver.GetResource("acct:bob@foobar.com")
 
 		if err != nil {
 			t.Fatal(err)

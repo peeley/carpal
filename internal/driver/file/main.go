@@ -35,7 +35,7 @@ func (driver fileDriver) GetResource(name string) (*resource.Resource, error) {
 		return nil, fmt.Errorf("could not unmarshal file to JRD: %w", err)
 	}
 
-	resource.Subject = "acct:" + name + "@" + driver.Configuration.Domain
+	resource.Subject = name
 
 	return &resource, nil
 }

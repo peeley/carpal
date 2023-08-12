@@ -34,7 +34,6 @@ type DatabaseConfiguration struct {
 }
 
 type Configuration struct {
-	Domain                string                 `yaml:"domain"`
 	Driver                string                 `yaml:"driver"`
 	FileConfiguration     *FileConfiguration     `yaml:"file"`
 	LDAPConfiguration     *LDAPConfiguration     `yaml:"ldap"`
