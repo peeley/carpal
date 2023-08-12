@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/peeley/carpal/internal/driver"
@@ -38,12 +39,20 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		w.Write([]byte(err.Error()))
+		return
 	}
 
 	JRD, err := resource.MarshalResource(*resourceStruct)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write([]byte(err.Error()))
+		if errors.Is(err, driver.ResourceNotFound{}) {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(err.Error()))
+			return
+		} else {
+			w.WriteHeader(http.StatusBadGateway)
+			w.Write([]byte(err.Error()))
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

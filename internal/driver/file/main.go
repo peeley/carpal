@@ -1,13 +1,14 @@
 package file
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
 
 	"github.com/peeley/carpal/internal/config"
-	"github.com/peeley/carpal/internal/resource"
 	"github.com/peeley/carpal/internal/driver"
+	"github.com/peeley/carpal/internal/resource"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,12 +22,16 @@ func NewFileDriver(config config.Configuration) driver.Driver {
 	}
 }
 
-func (driver fileDriver) GetResource(name string) (*resource.Resource, error) {
-	baseDirectory := path.Clean(driver.Configuration.FileConfiguration.Directory)
+func (d fileDriver) GetResource(name string) (*resource.Resource, error) {
+	baseDirectory := path.Clean(d.Configuration.FileConfiguration.Directory)
 
 	resourceFile, err := os.ReadFile(path.Join(baseDirectory, name))
 	if err != nil {
-		return nil, fmt.Errorf("resource file not found: %w", err)
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, driver.ResourceNotFound{ResourceName: name}
+		} else {
+			return nil, fmt.Errorf("resource file not found: %w", err)
+		}
 	}
 
 	var resource resource.Resource
