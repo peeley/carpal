@@ -71,4 +71,47 @@ func TestResourceHandlerFileDriver(t *testing.T) {
 			)
 		}
 	})
+
+	t.Run("requests not including `resource` fail return 400", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodGet, "/", nil)
+
+		responseRecorder := httptest.NewRecorder()
+		httpHandler.ServeHTTP(responseRecorder, req)
+
+		if responseRecorder.Code != http.StatusBadRequest {
+			t.Fatalf(
+				"expected 400, got %v, `%v`",
+				responseRecorder.Code,
+				responseRecorder.Body.String(),
+			)
+		}
+	})
+
+	t.Run("non-GET requests return 405", func(t *testing.T) {
+		reqMethods := []string{
+			http.MethodConnect,
+			http.MethodDelete,
+			http.MethodHead,
+			http.MethodOptions,
+			http.MethodPatch,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodTrace,
+		}
+
+		for _, method := range reqMethods {
+			req, _ := http.NewRequest(method, "/", nil)
+
+			responseRecorder := httptest.NewRecorder()
+			httpHandler.ServeHTTP(responseRecorder, req)
+
+			if responseRecorder.Code != http.StatusMethodNotAllowed {
+				t.Fatalf(
+					"expected 405, got %v, `%v`",
+					responseRecorder.Code,
+					responseRecorder.Body.String(),
+				)
+			}
+		}
+	})
 }
