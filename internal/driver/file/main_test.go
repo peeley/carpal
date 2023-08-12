@@ -1,10 +1,12 @@
 package file
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/peeley/carpal/internal/config"
+	"github.com/peeley/carpal/internal/driver"
 	"github.com/peeley/carpal/internal/resource"
 )
 
@@ -54,6 +56,10 @@ func TestFileDriverGetResource(t *testing.T) {
 
 		if err == nil {
 			t.Errorf("should have gotten error, instead got resource: %+v", resource)
+		}
+
+		if !errors.As(err, &driver.ResourceNotFound{}) {
+			t.Errorf("error should be ResourceNotFound: %+v", err)
 		}
 	})
 }

@@ -37,14 +37,7 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	resourceStruct, err := handler.Driver.GetResource(resourceParam)
 	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	JRD, err := resource.MarshalResource(*resourceStruct)
-	if err != nil {
-		if errors.Is(err, driver.ResourceNotFound{}) {
+		if errors.As(err, &driver.ResourceNotFound{}) {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
@@ -53,6 +46,13 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(err.Error()))
 			return
 		}
+	}
+
+	JRD, err := resource.MarshalResource(*resourceStruct)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte(err.Error()))
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

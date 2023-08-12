@@ -22,6 +22,7 @@ func main() {
 	switch config.Driver {
 	case "file":
 		driver = file.NewFileDriver(*config)
+	// TODO add other drivers
 	default:
 		log.Fatalf("driver `%s` is invalid", config.Driver)
 	}
@@ -29,5 +30,10 @@ func main() {
 	handler := handler.NewResourceHandler(driver)
 	http.HandleFunc("/", handler.Handle)
 
-	log.Fatal(http.ListenAndServe(":8008", nil))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8008"
+	}
+
+	log.Fatal(http.ListenAndServe(":" + port, nil))
 }
