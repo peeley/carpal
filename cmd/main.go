@@ -12,7 +12,12 @@ import (
 )
 
 func main() {
-	configWizard := config.NewConfigWizard(os.Getenv("CONFIG_FILE"))
+	fileLocation := os.Getenv("CONFIG_FILE")
+	if fileLocation == "" {
+		fileLocation = "/etc/carpal/config.yml"
+	}
+
+	configWizard := config.NewConfigWizard(fileLocation)
 	config, err := configWizard.GetConfiguration()
 	if err != nil {
 		log.Fatalf("could not load configuration: %v", err)
@@ -35,5 +40,6 @@ func main() {
 		port = "8008"
 	}
 
+	log.Printf("launching carpal server on port %v...", port)
 	log.Fatal(http.ListenAndServe(":" + port, nil))
 }
