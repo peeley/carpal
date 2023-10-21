@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/peeley/carpal/internal/driver"
@@ -28,8 +29,10 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resourceParam := r.URL.Query().Get("resource")
+	log.Printf("received request for resource %v", resourceParam)
 
 	if resourceParam == "" {
+		log.Printf("received blank resource request")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("bad request"))
 		return
@@ -37,6 +40,7 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	resourceStruct, err := handler.Driver.GetResource(resourceParam)
 	if err != nil {
+		log.Printf("resource %v not found: %v", resourceParam, err)
 		if errors.As(err, &driver.ResourceNotFound{}) {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
@@ -50,6 +54,7 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	JRD, err := resource.MarshalResource(*resourceStruct)
 	if err != nil {
+		log.Printf("unable to marshal resource: %v", err)
 		w.WriteHeader(http.StatusBadGateway)
 		w.Write([]byte(err.Error()))
 		return
