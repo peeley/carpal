@@ -1,0 +1,6 @@
+aliases:
+  - "mailto:{{ index . "mail" }}"
+properties:
+links:
+  - rel: "http://webfinger.example/rel/profile-page"
+    href: "https://www.example.com/~{{ index . "uid" }}/"

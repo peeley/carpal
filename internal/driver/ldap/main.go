@@ -57,8 +57,8 @@ func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	}
 
 	searchString := fmt.Sprintf("(%s=%s)", d.Configuration.LDAPConfiguration.UserAttr, username)
-	if d.Configuration.LDAPConfiguration.GroupDN != "" {
-		searchString = fmt.Sprintf("&%v%v", d.Configuration.LDAPConfiguration.GroupDN, searchString)
+	if d.Configuration.LDAPConfiguration.Filter != "" {
+		searchString = fmt.Sprintf("(&%v%v)", d.Configuration.LDAPConfiguration.Filter, searchString)
 	}
 	result, err := conn.Search(client.NewSearchRequest(
 		d.Configuration.LDAPConfiguration.BaseDN,
