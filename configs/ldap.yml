@@ -9,4 +9,5 @@ ldap:
   attributes:
     - uid
     - mail
+    - cn
   template: configs/ldap.gotempl

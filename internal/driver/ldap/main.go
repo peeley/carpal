@@ -14,17 +14,26 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type LdapClient interface {
+	Bind(string, string) error
+	Close() error
+	Search(*client.SearchRequest) (*client.SearchResult, error)
+}
+
 type ldapDriver struct {
 	Configuration config.Configuration
 	Template      *template.Template
+	ClientFunc    func() (LdapClient, error)
 }
 
-func NewLDAPDriver(config config.Configuration) driver.Driver {
+func NewLDAPDriver(conf config.Configuration) driver.Driver {
 	d := ldapDriver{
-		Configuration: config,
+		Configuration: conf,
 	}
-	d.Template = template.Must(template.ParseFiles(config.LDAPConfiguration.Template))
-
+	d.Template = template.Must(template.ParseFiles(conf.LDAPConfiguration.Template))
+	d.ClientFunc = func() (LdapClient, error) {
+		return client.DialURL(conf.LDAPConfiguration.URL)
+	}
 	return d
 }
 
@@ -35,7 +44,11 @@ func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	resourcename := re.FindStringSubmatch(name)[1:]
+	resourceSplit := re.FindStringSubmatch(name)
+	if len(resourceSplit) == 0 {
+		return nil, driver.ResourceNotFound{ResourceName: name}
+	}
+	resourcename := resourceSplit[1:]
 
 	if len(resourcename) < 2 {
 		return nil, errors.New("Error breaking down resource")
@@ -45,13 +58,12 @@ func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	}
 
 	username := resourcename[1]
-	conn, err := client.DialURL(d.Configuration.LDAPConfiguration.URL)
+	c, err := d.ClientFunc()
 	if err != nil {
 		return nil, err
 	}
-
-	defer conn.Close()
-	err = conn.Bind(d.Configuration.LDAPConfiguration.BindUser, d.Configuration.LDAPConfiguration.BindPass)
+	defer c.Close()
+	err = c.Bind(d.Configuration.LDAPConfiguration.BindUser, d.Configuration.LDAPConfiguration.BindPass)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +72,7 @@ func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	if d.Configuration.LDAPConfiguration.Filter != "" {
 		searchString = fmt.Sprintf("(&%v%v)", d.Configuration.LDAPConfiguration.Filter, searchString)
 	}
-	result, err := conn.Search(client.NewSearchRequest(
+	result, err := c.Search(client.NewSearchRequest(
 		d.Configuration.LDAPConfiguration.BaseDN,
 		client.ScopeWholeSubtree,
 		client.NeverDerefAliases,
