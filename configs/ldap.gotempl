@@ -1,6 +1,6 @@
 aliases:
   - "mailto:{{ index . "mail" }}"
-  - "https://mastodon/{{ index . "uid" }}
+  - "https://mastodon/{{ index . "uid" }}"
 properties:
   'http://webfinger.example/ns/name': '{{ index . "cn" }}'
 links:
