@@ -40,23 +40,18 @@ func NewLDAPDriver(conf config.Configuration) driver.Driver {
 func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	var resource resource.Resource
 
-	re, err := regexp.Compile("(.+):([^@]+)")
+	re, err := regexp.Compile("acct:([^@]+)")
 	if err != nil {
 		return nil, err
 	}
-	resourceSplit := re.FindStringSubmatch(name)
-	if len(resourceSplit) == 0 {
+	resourcename := re.FindStringSubmatch(name)
+	if len(resourcename) == 0 {
 		return nil, driver.ResourceNotFound{ResourceName: name}
 	}
-	resourcename := resourceSplit[1:]
 
 	if len(resourcename) < 2 {
 		return nil, errors.New("Error breaking down resource")
 	}
-	if resourcename[0] != "acct" {
-		return nil, driver.ResourceNotFound{ResourceName: name}
-	}
-
 	username := resourcename[1]
 	c, err := d.ClientFunc()
 	if err != nil {
