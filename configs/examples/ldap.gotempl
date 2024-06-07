@@ -1,0 +1,8 @@
+aliases:
+  - "mailto:{{ index . "mail" }}"
+  - "https://mastodon/{{ index . "uid" }}"
+properties:
+  'http://webfinger.example/ns/name': '{{ index . "cn" }}'
+links:
+  - rel: "http://webfinger.example/rel/profile-page"
+    href: "https://www.example.com/~{{ index . "uid" }}/"

@@ -26,7 +26,14 @@ type FileConfiguration struct {
 }
 
 type LDAPConfiguration struct {
-	// TODO
+	URL        string   `yaml:"url"`
+	BindUser   string   `yaml:"bind_user"`
+	BindPass   string   `yaml:"bind_pass"`
+	BaseDN     string   `yaml:"basedn"`
+	Filter     string   `yaml:"filter"`
+	UserAttr   string   `yaml:"user_attr"`
+	Attributes []string `yaml:"attributes"`
+	Template   string   `yaml:"template"`
 }
 
 type DatabaseConfiguration struct {

@@ -8,6 +8,7 @@ import (
 	"github.com/peeley/carpal/internal/config"
 	"github.com/peeley/carpal/internal/driver"
 	"github.com/peeley/carpal/internal/driver/file"
+	"github.com/peeley/carpal/internal/driver/ldap"
 	"github.com/peeley/carpal/internal/handler"
 )
 
@@ -27,6 +28,8 @@ func main() {
 	switch config.Driver {
 	case "file":
 		driver = file.NewFileDriver(*config)
+	case "ldap":
+		driver = ldap.NewLDAPDriver(*config)
 	// TODO add other drivers
 	default:
 		log.Fatalf("driver `%s` is invalid", config.Driver)
@@ -41,5 +44,5 @@ func main() {
 	}
 
 	log.Printf("launching carpal server on port %v...", port)
-	log.Fatal(http.ListenAndServe(":" + port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
