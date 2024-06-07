@@ -40,14 +40,15 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	resourceStruct, err := handler.Driver.GetResource(resourceParam)
 	if err != nil {
-		log.Printf("resource %v not found: %v", resourceParam, err)
 		if errors.As(err, &driver.ResourceNotFound{}) {
+			log.Printf("resource %v not found: %v", resourceParam, err)
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
 		} else {
+			log.Printf("error retrieving resource %v: %v", resourceParam, err)
 			w.WriteHeader(http.StatusBadGateway)
-			w.Write([]byte(err.Error()))
+			w.Write([]byte("bad gateway"))
 			return
 		}
 	}
