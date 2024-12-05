@@ -1,13 +1,9 @@
-name: Déploiement de l'application
+name: Deploy the Application
 
 on:
   push:
     branches:
       - master
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: 'bachrc/carpal-arm64-docker'
 
 permissions:
   contents: read
@@ -33,15 +29,14 @@ jobs:
       - name: Log in to the Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ vars.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ vars.DOCKER_HUB_USERNAME }}/carpal
           tags: |
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
