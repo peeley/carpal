@@ -44,15 +44,15 @@ func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	resourcename := re.FindStringSubmatch(name)
-	if len(resourcename) == 0 {
+	resourceName := re.FindStringSubmatch(name)
+	if len(resourceName) == 0 {
 		return nil, driver.ResourceNotFound{ResourceName: name}
 	}
 
-	if len(resourcename) < 2 {
+	if len(resourceName) < 2 {
 		return nil, errors.New("Error breaking down resource")
 	}
-	username := resourcename[1]
+	username := resourceName[1]
 	c, err := d.ClientFunc()
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (d ldapDriver) GetResource(name string) (*resource.Resource, error) {
 	if len(result.Entries) > 1 {
 		return nil, fmt.Errorf("Error finding user: Wanted 1 result, got %v\n", len(result.Entries))
 	} else if len(result.Entries) == 0 {
-		return nil, driver.ResourceNotFound{ResourceName: name}
+		return nil, driver.ResourceNotFound{ResourceName: username}
 	}
 	ldapUser := result.Entries[0]
 	ldapAttrs := make(map[string]string)

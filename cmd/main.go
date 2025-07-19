@@ -9,6 +9,7 @@ import (
 	"github.com/peeley/carpal/internal/driver"
 	"github.com/peeley/carpal/internal/driver/file"
 	"github.com/peeley/carpal/internal/driver/ldap"
+	"github.com/peeley/carpal/internal/driver/sql"
 	"github.com/peeley/carpal/internal/handler"
 )
 
@@ -30,7 +31,12 @@ func main() {
 		driver = file.NewFileDriver(*config)
 	case "ldap":
 		driver = ldap.NewLDAPDriver(*config)
-	// TODO add other drivers
+	case "sql":
+		var err error
+		driver, err = sql.NewSQLDriver(*config)
+		if err != nil {
+			log.Fatalf("failed to initialize SQL driver: %v", err)
+		}
 	default:
 		log.Fatalf("driver `%s` is invalid", config.Driver)
 	}

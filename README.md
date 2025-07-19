@@ -75,8 +75,8 @@ You can change the location of the configuration file with the `CONFIG_FILE`
 environment variable.
 
 Carpal allows for the configuration of multiple different types of data sources.
-By default, the `file` driver is used, but an `ldap` driver is also available
-for fetching users from an LDAP directory.
+By default, the `file` driver is used, but `ldap` and `sql` drivers are also available
+for fetching users from an LDAP directory or SQL database respectively.
 
 ### [File Driver](#file-driver)
 
@@ -163,8 +163,53 @@ resource resides in a domain name matching the WebFinger resource's.
 For a complete example of the LDAP driver, see the [example
 configuration](configs/examples/ldap) provided.
 
-## Features
-- [x] Serve WebFinger resources over HTTP
-- [x] Serve resources from static YAML files
-- [x] Serve resources from LDAP
-- [ ] Serve resources from an SQL database
+### [SQL Driver](#sql-driver)
+
+Carpal can also be configured to read resources from an SQL database.
+
+With the following configuration files:
+
+```yaml
+# /etc/carpal/config.yml
+
+driver: sql
+database:
+  driver: "postgres" # available drivers are `postgres`, `mysql`, or `sqlite`
+  url: "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+  table: "users"
+
+  # this is the column of the specified table that is searched for the requested
+  # `acct:` resource value. for example, if we get a request for
+  # `acct:bob@example.com`, the row of `users` where `email` = `bob@example.com` 
+  # will be fetched.
+  key_column: "email"
+  
+  # these other columns will also be selected from the specified table, and will
+  # be available for rendering in the template file.
+  column_names:
+    - "email"
+    - "handle"
+    - "name"
+  template: "/etc/carpal/sql.gotempl"
+```
+
+```yaml
+# /etc/carpal/sql.gotempl
+
+aliases:
+  - "mailto:{{ .email }}"
+  - "https://mastodon/{{ .handle }}"
+properties:
+  'http://webfinger.example/ns/name': '{{ .name }}'
+links:
+  - rel: "http://webfinger.example/rel/profile-page"
+    href: "https://www.example.com/~{{ .handle }}/"
+```
+
+...a request for `acct:bob@foobar.com` will execute the following SQL query:
+
+```sql
+SELECT email, handle, name FROM users WHERE email = 'bob@foobar.com'
+```
+
+And render the result using the provided template.
