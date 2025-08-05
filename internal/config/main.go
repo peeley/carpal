@@ -37,7 +37,12 @@ type LDAPConfiguration struct {
 }
 
 type DatabaseConfiguration struct {
-	// TODO
+	Driver      string   `yaml:"driver"`       // e.g., "postgres"
+	URL         string   `yaml:"url"`          // Database connection URL
+	Table       string   `yaml:"table"`        // Table name
+	KeyColumn   string   `yaml:"key_column"`   // Column to search by (e.g., "uid")
+	ColumnNames []string `yaml:"column_names"` // Mapping of column names to template variables
+	Template    string   `yaml:"template"`     // Path to the template file
 }
 
 type Configuration struct {
