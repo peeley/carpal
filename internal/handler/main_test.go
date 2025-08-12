@@ -54,6 +54,38 @@ func TestResourceHandlerFileDriver(t *testing.T) {
 		}
 	})
 
+	t.Run("can retrieve resources and serve via http, even with a rel= param", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodGet, "/", nil)
+		query := req.URL.Query()
+		query.Add("rel", "http://openid.net/specs/connect/1.0/issuer")
+		query.Add("resource", "acct:bob@foobar.com")
+		req.URL.RawQuery = query.Encode()
+
+		responseRecorder := httptest.NewRecorder()
+		httpHandler.ServeHTTP(responseRecorder, req)
+
+		if responseRecorder.Code != http.StatusOK {
+			t.Fatalf("expected 200 OK, got %v", responseRecorder.Code)
+		}
+
+		responseHeaders := responseRecorder.HeaderMap
+
+		if len(responseHeaders["Content-Type"]) != 1 ||
+			responseHeaders["Content-Type"][0] != "application/jrd+json" {
+			t.Fatalf(
+				"expected application/jrd+json content type, got %v",
+				responseHeaders["Content-Type"],
+			)
+		}
+
+		body := responseRecorder.Body.String()
+
+		want := `{"subject":"acct:bob@foobar.com","aliases":["mailto:bob@foobar.com","https://mastodon/bob"],"properties":{"http://webfinger.example/ns/name":"Bob Smith"},"links":[{"rel":"http://webfinger.example/rel/profile-page","href":"https://www.example.com/~bob/"},{"rel":"http://webfinger.example/rel/businesscard","href":"https://www.example.com/~bob/bob.vcf"}]}`
+
+		if body != want {
+			t.Fatalf("got: %+v,\n want: %+v", body, want)
+		}
+	})
 	t.Run("nonexistent resources return 404", func(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 		query := req.URL.Query()

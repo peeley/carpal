@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/peeley/carpal/internal/driver"
 	"github.com/peeley/carpal/internal/resource"
@@ -27,17 +28,34 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("method not allowed"))
 		return
 	}
-
-	resourceParam := r.URL.Query().Get("resource")
-	log.Printf("received request for resource %v", resourceParam)
-
+	
+	query, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		log.Printf("invalid query params")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("bad request"))
+		return
+	}
+	resourceParamList, present := query["resource"]
+	if !present {
+		log.Printf("received blank resource request")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("bad request"))
+		return
+	}
+	resourceParam := resourceParamList[0]
 	if resourceParam == "" {
 		log.Printf("received blank resource request")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("bad request"))
 		return
 	}
+	// todo: properly handle the rel= params
+	// the spec says that we should only return links specified by rel, and that we should 
+	// be able to handle multiple rel params
+	// https://datatracker.ietf.org/doc/html/rfc7033#section-4.3
 
+	log.Printf("received request for resource %v", resourceParam)
 	resourceStruct, err := handler.Driver.GetResource(resourceParam)
 	if err != nil {
 		if errors.As(err, &driver.ResourceNotFound{}) {
