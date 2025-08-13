@@ -28,7 +28,10 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("method not allowed"))
 		return
 	}
-	
+
+	// the following sections allow us to properly handle other URL params,
+	// particularly rel params before resource params.
+	// using query.Get("resource") results in blank resourceParam if more than one 
 	query, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		log.Printf("invalid query params")
@@ -36,25 +39,20 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("bad request"))
 		return
 	}
+
 	resourceParamList, present := query["resource"]
-	if !present {
+	if  !present || resourceParamList[0] == "" {
 		log.Printf("received blank resource request")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("bad request"))
 		return
 	}
+
 	resourceParam := resourceParamList[0]
-	if resourceParam == "" {
-		log.Printf("received blank resource request")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
-		return
-	}
 	// todo: properly handle the rel= params
 	// the spec says that we should only return links specified by rel, and that we should 
 	// be able to handle multiple rel params
 	// https://datatracker.ietf.org/doc/html/rfc7033#section-4.3
-
 	log.Printf("received request for resource %v", resourceParam)
 	resourceStruct, err := handler.Driver.GetResource(resourceParam)
 	if err != nil {
