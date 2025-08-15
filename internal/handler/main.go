@@ -53,6 +53,25 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	relParams := r.URL.Query()["rel"]
+	if len(relParams) != 0 {
+		relParamsSet := make(map[string]bool)
+		for _, rel := range(relParams) {
+			relParamsSet[rel] = true
+		}
+
+		filteredResourceLinks := []resource.Link{}
+		for _, link := range(resourceStruct.Links) {
+
+			_, ok := relParamsSet[link.Rel]
+			if ok {
+				filteredResourceLinks = append(filteredResourceLinks, link)
+			}
+		}
+
+		resourceStruct.Links = filteredResourceLinks
+	}
+
 	JRD, err := resource.MarshalResource(*resourceStruct)
 	if err != nil {
 		log.Printf("unable to marshal resource: %v", err)
