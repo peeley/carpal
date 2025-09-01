@@ -1,7 +1,9 @@
 driver: sql
 database:
   driver: "postgres"
+  # Either url or url_file must be specified, but not both
   url: "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+  # url_file: /path/to/url/file
   table: "users"
   key_column: "email"
   column_names:

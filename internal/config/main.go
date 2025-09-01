@@ -15,6 +15,7 @@ type ConfigWizard interface {
 	processConfigYaml([]byte) (*Configuration, error)
 	GetConfiguration() (*Configuration, error)
 	processLDAPBindPassword(config *Configuration) error
+	processDatabaseURL(config *Configuration) error
 }
 
 type configWizard struct {
@@ -44,6 +45,7 @@ type LDAPConfiguration struct {
 type DatabaseConfiguration struct {
 	Driver      string   `yaml:"driver"`       // e.g., "postgres"
 	URL         string   `yaml:"url"`          // Database connection URL
+	URLFile     string   `yaml:"url_file"`     // File containing database connection URL
 	Table       string   `yaml:"table"`        // Table name
 	KeyColumn   string   `yaml:"key_column"`   // Column to search by (e.g., "uid")
 	ColumnNames []string `yaml:"column_names"` // Mapping of column names to template variables

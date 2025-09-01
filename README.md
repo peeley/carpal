@@ -177,12 +177,14 @@ With the following configuration files:
 driver: sql
 database:
   driver: "postgres" # available drivers are `postgres`, `mysql`, or `sqlite`
+  # Either url or url_file must be specified, but not both
   url: "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+  # url_file: /path/to/url/file
   table: "users"
 
   # this is the column of the specified table that is searched for the requested
   # `acct:` resource value. for example, if we get a request for
-  # `acct:bob@example.com`, the row of `users` where `email` = `bob@example.com` 
+  # `acct:bob@example.com`, the row of `users` where `email` = `bob@example.com`
   # will be fetched.
   key_column: "email"
   
