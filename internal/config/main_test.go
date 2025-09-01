@@ -103,6 +103,72 @@ ldap:
 	})
 }
 
+func TestConfigWizardGetConfigurationWithDatabaseURLFile(t *testing.T) {
+	testYaml := `
+driver: sql
+database:
+  url_file: ../../test/secret_file
+`
+	urlContent := "test_secret"
+	urlFile := "../../test/secret_file"
+
+	wizard := configWizard{}
+
+	t.Run("config wizard can read database URL from file", func(t *testing.T) {
+		got, err := wizard.processConfigYaml([]byte(testYaml))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got.DatabaseConfiguration.URL != urlContent {
+			t.Errorf("expected URL to be '%s', got '%s'", urlContent, got.DatabaseConfiguration.URL)
+		}
+
+		if got.DatabaseConfiguration.URLFile != urlFile {
+			t.Errorf("expected URLFile to be '%s', got '%s'", urlFile, got.DatabaseConfiguration.URLFile)
+		}
+	})
+}
+
+func TestConfigWizardGetConfigurationWithBothDatabaseURLAndURLFile(t *testing.T) {
+	testYaml := `
+driver: sql
+database:
+  url: "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+  url_file: ../../test/secret_file
+`
+	wizard := configWizard{}
+	t.Run("config wizard errors when both url and url_file are specified", func(t *testing.T) {
+		_, err := wizard.processConfigYaml([]byte(testYaml))
+		if err == nil {
+			t.Fatal("expected error when both url and url_file are specified")
+		}
+
+		if err.Error() != "must specify either url or url_file" {
+			t.Errorf("unexpected error message: %v", err)
+		}
+	})
+}
+
+func TestConfigWizardGetConfigurationWithMissingDatabaseURLFile(t *testing.T) {
+	testYaml := `
+driver: sql
+database:
+  url_file: /non/existant/file
+`
+	wizard := configWizard{}
+	t.Run("config wizard errors when database URL file is missing", func(t *testing.T) {
+		_, err := wizard.processConfigYaml([]byte(testYaml))
+		if err == nil {
+			t.Fatal("expected error when database URL file is missing")
+		}
+
+		if !strings.Contains(err.Error(), "cannot read database URL file") {
+			t.Errorf("unexpected error message: %v", err)
+		}
+	})
+}
+
 func TestConfigWizardGetConfiguration(t *testing.T) {
 	t.Run("config wizard can read config file and parse configuration", func(t *testing.T) {
 		wizard := NewConfigWizard("../../test/config.yml")
