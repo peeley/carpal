@@ -124,7 +124,9 @@ driver: ldap
 ldap:
   url: ldap://myldapserver
   bind_user: uid=myadmin,ou=people,dc=foobar,dc=com
+  # Either bind_pass or bind_pass_file must be specified
   bind_pass: myadminpassword
+  # bind_pass_file: /path/to/password/file
   basedn: ou=people,dc=foobar,dc=com
   filter: (uid=*)
   user_attr: uid
