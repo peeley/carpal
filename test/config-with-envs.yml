@@ -1,0 +1,10 @@
+driver: sql
+database:
+  driver: "postgres"
+  url: ${DATABASE_URL}
+  table: "users"
+  key_column: "email"
+  column_names:
+    - "email"
+    - "handle"
+    - "name"

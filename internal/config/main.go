@@ -20,10 +20,11 @@ type ConfigWizard interface {
 
 type configWizard struct {
 	ConfigFileLocation string
+	ExpandEnvs bool
 }
 
-func NewConfigWizard(configFileLocation string) ConfigWizard {
-	return configWizard{configFileLocation}
+func NewConfigWizard(configFileLocation string, expandEnvs bool) ConfigWizard {
+	return configWizard{configFileLocation, expandEnvs}
 }
 
 type FileConfiguration struct {
@@ -63,6 +64,13 @@ func (wiz configWizard) readConfigFile() ([]byte, error) {
 	contents, err := os.ReadFile(wiz.ConfigFileLocation)
 	if err != nil {
 		return nil, fmt.Errorf("could not read config file: %w", err)
+	}
+
+	if wiz.ExpandEnvs {
+		contentsString := string(contents)
+		contentsString = os.ExpandEnv(contentsString)
+
+		return []byte(contentsString), nil
 	}
 
 	return contents, nil

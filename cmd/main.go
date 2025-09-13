@@ -19,7 +19,9 @@ func main() {
 		fileLocation = "/etc/carpal/config.yml"
 	}
 
-	configWizard := config.NewConfigWizard(fileLocation)
+	expandEnvs := os.Getenv("EXPAND_CONFIG_ENV_VARS") != ""
+
+	configWizard := config.NewConfigWizard(fileLocation, expandEnvs)
 	config, err := configWizard.GetConfiguration()
 	if err != nil {
 		log.Fatalf("could not load configuration: %v", err)
