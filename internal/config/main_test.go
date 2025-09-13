@@ -171,7 +171,7 @@ database:
 
 func TestConfigWizardGetConfiguration(t *testing.T) {
 	t.Run("config wizard can read config file and parse configuration", func(t *testing.T) {
-		wizard := NewConfigWizard("../../test/config.yml")
+		wizard := NewConfigWizard("../../test/config.yml", false)
 
 		got, err := wizard.GetConfiguration()
 		if err != nil {
@@ -191,7 +191,7 @@ func TestConfigWizardGetConfiguration(t *testing.T) {
 	})
 
 	t.Run("config wizard errors on nonexistent config file", func(t *testing.T) {
-		wizard := NewConfigWizard("missingno")
+		wizard := NewConfigWizard("missingno", false)
 
 		got, err := wizard.GetConfiguration()
 
@@ -201,6 +201,38 @@ func TestConfigWizardGetConfiguration(t *testing.T) {
 
 		if !errors.Is(err, os.ErrNotExist) {
 			t.Fatalf("error should be NotExist: %+v", err)
+		}
+	})
+}
+
+func TestConfigWizardExpandEnvs(t *testing.T) {
+	t.Run("config wizard can expand environment variables in configuration file", func(t *testing.T) {
+		wizard := NewConfigWizard("../../test/config-with-envs.yml", true)
+
+		databaseUrl := "test_dabase_url"
+		t.Setenv("DATABASE_URL", databaseUrl)
+
+		got, err := wizard.GetConfiguration()
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		want := &Configuration{
+			Driver: "sql",
+			DatabaseConfiguration: &DatabaseConfiguration{
+				Driver:      "postgres",
+				URL:         databaseUrl,
+				URLFile:     "",
+				Table:       "users",
+				KeyColumn:   "email",
+				ColumnNames: []string{"email", "handle", "name"},
+				Template:    "",
+			},
+		}
+
+		if !cmp.Equal(got, want) {
+			t.Errorf("got: %+v, want: %+v", got, want)
 		}
 	})
 }
