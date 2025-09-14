@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -69,6 +70,7 @@ func (wiz configWizard) readConfigFile() ([]byte, error) {
 	if wiz.ExpandEnvs {
 		contentsString := string(contents)
 		contentsString = os.ExpandEnv(contentsString)
+		slog.Debug(fmt.Sprintf("expanded environment variables in config: \n%s", contentsString))
 
 		return []byte(contentsString), nil
 	}

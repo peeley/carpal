@@ -3,7 +3,7 @@ package file
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path"
 
@@ -28,7 +28,7 @@ func (d fileDriver) GetResource(name string) (*resource.Resource, error) {
 
 	resourceFile, err := os.ReadFile(path.Join(baseDirectory, name))
 	if err != nil {
-		log.Printf("unable to read resource file: %v", err)
+		slog.Error("unable to read resource file", "err", err)
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, driver.ResourceNotFound{ResourceName: name}
 		} else {
@@ -39,7 +39,7 @@ func (d fileDriver) GetResource(name string) (*resource.Resource, error) {
 	var resource resource.Resource
 	err = yaml.Unmarshal(resourceFile, &resource)
 	if err != nil {
-		log.Printf("unable to unmarshal resource file contents: %v", err)
+		slog.Error("unable to unmarshal resource file contents", "err", err)
 		return nil, fmt.Errorf("could not unmarshal file to JRD: %w", err)
 	}
 

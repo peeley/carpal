@@ -2,7 +2,7 @@ package handler
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/peeley/carpal/internal/driver"
@@ -29,10 +29,10 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resourceParam := r.URL.Query().Get("resource")
-	log.Printf("received request for resource %v", resourceParam)
+	slog.Info("received request for resource", "resource_name", resourceParam)
 
 	if resourceParam == "" {
-		log.Printf("received blank resource request")
+		slog.Warn("received blank resource request")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("bad request"))
 		return
@@ -41,12 +41,12 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	resourceStruct, err := handler.Driver.GetResource(resourceParam)
 	if err != nil {
 		if errors.As(err, &driver.ResourceNotFound{}) {
-			log.Printf("resource %v not found: %v", resourceParam, err)
+			slog.Warn("resource not found", "resource_name", resourceParam, "err", err)
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
 		} else {
-			log.Printf("error retrieving resource %v: %v", resourceParam, err)
+			slog.Error("error retrieving resource", "resource_name", resourceParam, "err", err)
 			w.WriteHeader(http.StatusBadGateway)
 			w.Write([]byte("bad gateway"))
 			return
@@ -74,7 +74,7 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	JRD, err := resource.MarshalResource(*resourceStruct)
 	if err != nil {
-		log.Printf("unable to marshal resource: %v", err)
+		slog.Error("unable to marshal resource", "resource_name", resourceParam, "err", err)
 		w.WriteHeader(http.StatusBadGateway)
 		w.Write([]byte(err.Error()))
 		return

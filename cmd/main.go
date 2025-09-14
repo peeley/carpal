@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -13,10 +14,23 @@ import (
 	"github.com/peeley/carpal/internal/handler"
 )
 
+const (
+	DEFAULT_CONFIG_FILE_PATH = "/etc/carpal/config.yml"
+	DEFAULT_HTTP_PORT        = "8008"
+)
+
 func main() {
+	configureLogging()
+
 	fileLocation := os.Getenv("CONFIG_FILE")
 	if fileLocation == "" {
-		fileLocation = "/etc/carpal/config.yml"
+		slog.Debug(
+			fmt.Sprintf(
+				"no config file specified, using default config file path %s",
+				DEFAULT_CONFIG_FILE_PATH,
+			),
+		)
+		fileLocation = DEFAULT_CONFIG_FILE_PATH
 	}
 
 	expandEnvs := os.Getenv("EXPAND_CONFIG_ENV_VARS") != ""
@@ -24,7 +38,8 @@ func main() {
 	configWizard := config.NewConfigWizard(fileLocation, expandEnvs)
 	config, err := configWizard.GetConfiguration()
 	if err != nil {
-		log.Fatalf("could not load configuration: %v", err)
+		slog.Error("could not load configuration", "err", err)
+		os.Exit(1)
 	}
 
 	var driver driver.Driver
@@ -37,10 +52,12 @@ func main() {
 		var err error
 		driver, err = sql.NewSQLDriver(*config)
 		if err != nil {
-			log.Fatalf("failed to initialize SQL driver: %v", err)
+			slog.Error("failed to initialize SQL driver", "err", err)
+			os.Exit(1)
 		}
 	default:
-		log.Fatalf("driver `%s` is invalid", config.Driver)
+		slog.Error(fmt.Sprintf("driver `%s` is invalid", config.Driver))
+		os.Exit(1)
 	}
 
 	handler := handler.NewResourceHandler(driver)
@@ -48,9 +65,32 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8008"
+		slog.Debug(
+			fmt.Sprintf(
+				"no http port specified, using default port number %s",
+				DEFAULT_HTTP_PORT,
+			),
+		)
+		port = DEFAULT_HTTP_PORT
 	}
 
-	log.Printf("launching carpal server on port %v...", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	slog.Info(fmt.Sprintf("launching carpal server on port %v...", port))
+	slog.Error(fmt.Sprintf("%v", http.ListenAndServe(":"+port, nil)))
+}
+
+func configureLogging() {
+	logLevels := map[string]slog.Level{
+		"DEBUG":   slog.LevelDebug,
+		"INFO":    slog.LevelInfo,
+		"WARNING": slog.LevelWarn,
+		"ERROR":   slog.LevelError,
+	}
+
+	envLogLevel := os.Getenv("LOG_LEVEL")
+	logLevel, ok := logLevels[envLogLevel]
+	if !ok {
+		logLevel = slog.LevelInfo
+	}
+
+	slog.SetLogLoggerLevel(logLevel)
 }
