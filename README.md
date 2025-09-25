@@ -71,8 +71,22 @@ file:
   directory: /etc/carpal/resources/
 ```
 
-You can change the location of the configuration file with the `CONFIG_FILE`
+This configuration file primarily specifies how carpal interacts with the
+different data sources it can read from (see [Drivers](#drivers) for more). You
+can change the location of the configuration file with the `CONFIG_FILE`
 environment variable.
+
+### Environment Variables
+
+| Name | Values | Description |
+|:--|:--|:--|
+| `LOG_LEVEL`| `error`, `warn`, `info`, `debug` | Configures the minimum level of logs emitted to stdout. Default is `info`. See Go's `log/slog` [docs](https://pkg.go.dev/log/slog#Level) for more info. |
+| `CONFIG_FILE` | filepath | Absolute path of the config file in the filesystem. |
+| `EXPAND_CONFIG_ENV_VARS` | `true`, empty | If set to a non-empty string, this enables expansion of environment variables within the configuration file. See the [LDAP](#ldap-driver) and [SQL](#sql-driver) sections for examples. |
+| `PORT` | any port number |  Specifies the TCP port number that the web server will run on. |
+
+
+## [Drivers](#drivers)
 
 Carpal allows for the configuration of multiple different types of data sources.
 By default, the `file` driver is used, but `ldap` and `sql` drivers are also available
@@ -80,7 +94,7 @@ for fetching users from an LDAP directory or SQL database respectively.
 
 ### [File Driver](#file-driver)
 
-The example file configures the file driver by default. The file driver simply
+The minimal config file from above enables the file driver. The file driver simply
 reads a YAML file representing a resource from a specified directory, converts
 it to JSON, and returns it as an HTTP response to the client.
 
@@ -124,8 +138,11 @@ driver: ldap
 ldap:
   url: ldap://myldapserver
   bind_user: uid=myadmin,ou=people,dc=foobar,dc=com
-  # Either bind_pass or bind_pass_file must be specified
   bind_pass: myadminpassword
+  # with the EXPAND_CONFIG_ENV_VARS env var set to `true`, you can also do:
+  # bind_pass: ${BIND_PASS}
+
+  # or specify a file containing the bind pass:
   # bind_pass_file: /path/to/password/file
   basedn: ou=people,dc=foobar,dc=com
   filter: (uid=*)
@@ -177,8 +194,12 @@ With the following configuration files:
 driver: sql
 database:
   driver: "postgres" # available drivers are `postgres`, `mysql`, or `sqlite`
-  # Either url or url_file must be specified, but not both
   url: "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+  # with the EXPAND_CONFIG_ENV_VARS env var set to `true`, you can also do:
+  # url: ${DATABASE_URL}
+
+  # or specify a file containing the bind pass:
+  # bind_pass_file: /path/to/password/file
   # url_file: /path/to/url/file
   table: "users"
 
