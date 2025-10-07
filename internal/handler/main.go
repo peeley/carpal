@@ -80,7 +80,7 @@ func (handler resourceHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Add("Content-Type", "application/jrd+json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(JRD)
 }
