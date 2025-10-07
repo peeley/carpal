@@ -35,7 +35,7 @@ func TestResourceHandlerFileDriver(t *testing.T) {
 			t.Fatalf("expected 200 OK, got %v", responseRecorder.Code)
 		}
 
-		responseHeaders := responseRecorder.HeaderMap
+		responseHeaders := responseRecorder.Result().Header
 
 		if len(responseHeaders["Content-Type"]) != 1 ||
 			responseHeaders["Content-Type"][0] != "application/jrd+json" {
@@ -68,7 +68,7 @@ func TestResourceHandlerFileDriver(t *testing.T) {
 			t.Fatalf("expected 200 OK, got %v", responseRecorder.Code)
 		}
 
-		responseHeaders := responseRecorder.HeaderMap
+		responseHeaders := responseRecorder.Result().Header
 
 		if len(responseHeaders["Content-Type"]) != 1 ||
 			responseHeaders["Content-Type"][0] != "application/jrd+json" {
@@ -101,7 +101,7 @@ func TestResourceHandlerFileDriver(t *testing.T) {
 			t.Fatalf("expected 200 OK, got %v", responseRecorder.Code)
 		}
 
-		responseHeaders := responseRecorder.HeaderMap
+		responseHeaders := responseRecorder.Result().Header
 
 		if len(responseHeaders["Content-Type"]) != 1 ||
 			responseHeaders["Content-Type"][0] != "application/jrd+json" {
